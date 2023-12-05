@@ -29,38 +29,32 @@ fn main() {
     }
 }
 
-fn part2(filename: &str) -> io::Result<i32> {
-    let file = File::open(filename)?;
-    let reader = io::BufReader::new(file);
-
-    let part_number_regex = Regex::new(r"\d+").unwrap();
-    let gear_regex = Regex::new(r"\*").unwrap();
-
-    let mut part_numbers = vec![];
-    let mut gears = vec![];
-
-    for (i, line) in reader.lines().enumerate() {
-        let line = line?;
-
-        for part_match in part_number_regex.find_iter(&line) {
-            part_numbers.push(PartNumber {
-                number: part_match.as_str().parse::<i32>().unwrap(),
-                len: part_match.as_str().len() as i32,
-                pos: Point {
-                    col: part_match.start() as i32,
-                    row: i as i32,
-                },
-                found: false,
-            });
+fn part1(filename: &str) -> io::Result<i32> {
+    let (part_numbers, symbols) = match parse_schematics(filename, r"\d+", r"[^\d\.\n]") {
+        Ok(result) => result,
+        Err(err) => {
+            eprintln!("Error: {}", err);
+            (vec![], vec![])
         }
+    };
 
-        for gear_match in gear_regex.find_iter(&line) {
-            gears.push(Point {
-                col: gear_match.start() as i32,
-                row: i as i32,
-            });
+    let mut sum: i32 = 0;
+    for part_number in part_numbers.iter() {
+        if check_if_part_number(part_number, symbols.clone()) {
+            sum += part_number.number;
         }
     }
+    Ok(sum)
+}
+
+fn part2(filename: &str) -> io::Result<i32> {
+    let (mut part_numbers, gears) = match parse_schematics(filename, r"\d+", r"\*") {
+        Ok(result) => result,
+        Err(err) => {
+            eprintln!("Error: {}", err);
+            (vec![], vec![])
+        }
+    };
 
     let mut sum: i32 = 0;
     let mut gear_ratio: [i32; 2] = [-1, -1];
@@ -98,12 +92,16 @@ fn part2(filename: &str) -> io::Result<i32> {
     Ok(sum)
 }
 
-fn part1(filename: &str) -> io::Result<i32> {
+fn parse_schematics(
+    filename: &str,
+    pnr: &str,
+    sr: &str,
+) -> io::Result<(Vec<PartNumber>, Vec<Point>)> {
     let file = File::open(filename)?;
     let reader = io::BufReader::new(file);
 
-    let part_number_regex = Regex::new(r"\d+").unwrap();
-    let symbol_regex = Regex::new(r"[^\d\.\n]").unwrap();
+    let part_number_regex = Regex::new(pnr).unwrap();
+    let symbol_regex = Regex::new(sr).unwrap();
 
     let mut part_numbers = vec![];
     let mut symbols = vec![];
@@ -131,13 +129,7 @@ fn part1(filename: &str) -> io::Result<i32> {
         }
     }
 
-    let mut sum: i32 = 0;
-    for part_number in part_numbers.iter() {
-        if check_if_part_number(part_number, symbols.clone()) {
-            sum += part_number.number;
-        }
-    }
-    Ok(sum)
+    Ok((part_numbers, symbols))
 }
 
 fn check_if_part_number(part_number: &PartNumber, symbols: Vec<Point>) -> bool {
