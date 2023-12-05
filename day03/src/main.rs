@@ -7,6 +7,7 @@ struct PartNumber {
     number: i32,
     len: i32,
     pos: Point,
+    found: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -35,20 +36,21 @@ fn part2(filename: &str) -> io::Result<i32> {
     let part_number_regex = Regex::new(r"\d+").unwrap();
     let gear_regex = Regex::new(r"\*").unwrap();
 
-    let mut numbers = vec![];
+    let mut part_numbers = vec![];
     let mut gears = vec![];
 
     for (i, line) in reader.lines().enumerate() {
         let line = line?;
 
         for part_match in part_number_regex.find_iter(&line) {
-            numbers.push(PartNumber {
+            part_numbers.push(PartNumber {
                 number: part_match.as_str().parse::<i32>().unwrap(),
                 len: part_match.as_str().len() as i32,
                 pos: Point {
                     col: part_match.start() as i32,
                     row: i as i32,
                 },
+                found: false,
             });
         }
 
@@ -60,7 +62,40 @@ fn part2(filename: &str) -> io::Result<i32> {
         }
     }
 
-    Ok(5)
+    let mut sum: i32 = 0;
+    let mut gear_ratio: [i32; 2] = [-1, -1];
+
+    for gear in gears.iter() {
+        for part_number in part_numbers.iter_mut() {
+            for i in 0..part_number.len {
+                if check_adjacent(
+                    Point {
+                        col: part_number.pos.col + i,
+                        row: part_number.pos.row,
+                    },
+                    gear.clone(),
+                ) && !part_number.found
+                {
+                    if gear_ratio[0] == -1 {
+                        gear_ratio[0] = part_number.number;
+                    } else if gear_ratio[1] == -1 {
+                        gear_ratio[1] = part_number.number;
+                    } else {
+                        gear_ratio[0] = -1;
+                        gear_ratio[1] = -1;
+                    }
+                    part_number.found = true;
+                }
+            }
+        }
+        if gear_ratio[0] != -1 && gear_ratio[1] != -1 {
+            sum += gear_ratio[0] * gear_ratio[1];
+        }
+        gear_ratio[0] = -1;
+        gear_ratio[1] = -1;
+    }
+
+    Ok(sum)
 }
 
 fn part1(filename: &str) -> io::Result<i32> {
@@ -84,6 +119,7 @@ fn part1(filename: &str) -> io::Result<i32> {
                     col: part_match.start() as i32,
                     row: i as i32,
                 },
+                found: false,
             });
         }
 
