@@ -17,16 +17,8 @@ struct Point {
 }
 
 fn main() {
-    let filename = "input";
-
-    match part1(filename) {
-        Ok(answer) => println!("Part 1: {}", answer),
-        Err(err) => eprintln!("Error reading file: {}", err),
-    }
-    match part2(filename) {
-        Ok(answer) => println!("Part 2: {}", answer),
-        Err(err) => eprintln!("Error reading file: {}", err),
-    }
+    print_result(part1("sample.txt"), "Part 1");
+    print_result(part2("sample.txt"), "Part 2");
 }
 
 fn part1(filename: &str) -> io::Result<i32> {
@@ -151,4 +143,33 @@ fn check_if_part_number(part_number: &PartNumber, symbols: Vec<Point>) -> bool {
 
 fn check_adjacent(a: Point, b: Point) -> bool {
     (a.col - b.col).abs() <= 1 && (a.row - b.row).abs() <= 1
+}
+
+fn print_result(result: io::Result<i32>, part_name: &str) {
+    match result {
+        Ok(answer) => println!("{}: {}", part_name, answer),
+        Err(err) => eprintln!("Error reading file: {}", err),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1_sample() {
+        assert_eq!(part1("sample.txt").unwrap(), 4361);
+    }
+    #[test]
+    fn test_part1_input() {
+        assert_eq!(part1("input").unwrap(), 536576);
+    }
+    #[test]
+    fn test_part2_sample() {
+        assert_eq!(part2("sample.txt").unwrap(), 467835);
+    }
+    #[test]
+    fn test_part2_input() {
+        assert_eq!(part2("input").unwrap(), 75741499);
+    }
 }

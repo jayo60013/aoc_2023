@@ -66,3 +66,25 @@ fn print_result(result: io::Result<u32>, part_name: &str) {
         Err(err) => eprintln!("Error reading file: {}", err),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1_sample() {
+        assert_eq!(part1("sample.txt").unwrap(), 13);
+    }
+    #[test]
+    fn test_part1_input() {
+        assert_eq!(part1("input").unwrap(), 22488);
+    }
+    #[test]
+    fn test_part2_sample() {
+        assert_eq!(part2("sample.txt").unwrap(), 30);
+    }
+    #[test]
+    fn test_part2_input() {
+        assert_eq!(part2("input").unwrap(), 7013204);
+    }
+}
