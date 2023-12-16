@@ -1,68 +1,26 @@
 <?php
 
-// printf('Part 1: %d'.PHP_EOL, part1('input'));
-printf('Part 2: %d'.PHP_EOL, part2('input'));
+$grid = file('input');
+$empty_rows = getEmptyRows($grid);
+$empty_cols = getEmptyRows(transposeGrid($grid));
 
-const EXPANSION_RATE = 10;
+$galaxies = getGalaxies($grid);
 
-function part1($filename)
-{
-    $grid = expandGrid(file($filename));
-    $grid = transposeGrid($grid);
-    $grid = expandGrid($grid);
-
-    $galaxies = getGalaxies($grid);
-
-    return getSumOfDistances($galaxies);
-}
-
-function getSumOfDistances($galaxies)
-{
-    $sum = 0;
-    for ($i = 0; $i < count($galaxies); ++$i) {
-        for ($j = $i + 1; $j < count($galaxies); ++$j) {
-            if ($galaxies[$i] == $galaxies[$j]) {
-                continue;
-            }
-            $sum += getDistance($galaxies[$i], $galaxies[$j]);
-        }
-    }
-
-    return $sum;
-}
-
-function getDistance($lhs, $rhs)
-{
-    return abs($lhs[0] - $rhs[0]) + abs($lhs[1] - $rhs[1]);
-}
+printf('Part 1: %d'.PHP_EOL, getSummedDistance($galaxies, $empty_rows, $empty_cols, 2));
+printf('Part 2: %d'.PHP_EOL, getSummedDistance($galaxies, $empty_rows, $empty_cols, 1_000_000));
 
 function getGalaxies($grid)
 {
     $galaxies = [];
-    $row = 0;
-    foreach ($grid as $line) {
-        $lastPos = 0;
-        while (($lastPos = strpos($line, '#', $lastPos)) !== false) {
-            $galaxies[] = [$row, $lastPos];
-            ++$lastPos;
+
+    foreach ($grid as $row => $line) {
+        $positions = array_keys(str_split($line, 1), '#');
+        foreach ($positions as $col) {
+            $galaxies[] = [$row, $col];
         }
-        ++$row;
     }
 
     return $galaxies;
-}
-
-function expandGrid($grid)
-{
-    $new_grid = [];
-    foreach ($grid as $line) {
-        $new_grid[] = $line;
-        if (!str_contains($line, '#')) {
-            $new_grid[] = str_repeat('.', strlen($line) - 1);
-        }
-    }
-
-    return $new_grid;
 }
 
 function transposeGrid($arr)
@@ -72,72 +30,51 @@ function transposeGrid($arr)
     }, $arr);
 
     $transposed = array_map(null, ...$arr);
-    $repackaged = array_map(function ($chars) {
+
+    return array_map(function ($chars) {
         return implode('', $chars);
     }, $transposed);
-    array_pop($repackaged);
-
-    return $repackaged;
-}
-
-function part2($filename)
-{
-    $grid = file($filename);
-    $empty_rows = getEmptyRows($grid);
-    $empty_cols = getEmptyRows(transposeGrid($grid));
-
-    $galaxies = getGalaxies($grid);
-
-    return getSummedDistance($galaxies, $empty_rows, $empty_cols);
 }
 
 function getEmptyRows($grid)
 {
-    $rows = [];
-    for ($i = 0; $i < count($grid); ++$i) {
-        if (!str_contains($grid[$i], '#')) {
-            $rows[] = $i;
-        }
-    }
-
-    return $rows;
+    return array_keys(array_filter($grid, function ($line) {
+        return !str_contains($line, '#');
+    }));
 }
 
-function getSummedDistance($galaxies, $empty_rows, $empty_cols)
+function getSummedDistance($galaxies, $empty_rows, $empty_cols, $expansion)
 {
-    $EXPANSION_RATE = 2;
     $sum = 0;
     for ($i = 0; $i < count($galaxies); ++$i) {
         for ($j = $i + 1; $j < count($galaxies); ++$j) {
             if ($galaxies[$i] == $galaxies[$j]) {
                 continue;
             }
+            $minRow = min($galaxies[$i][0], $galaxies[$j][0]);
+            $minCol = min($galaxies[$i][1], $galaxies[$j][1]);
 
-            $lhs = [
-              min($galaxies[$i][0], $galaxies[$j][0]),
-              min($galaxies[$i][1], $galaxies[$j][1]),
-            ];
-            $rhs = [
-              max($galaxies[$i][0], $galaxies[$j][0]),
-              max($galaxies[$i][1], $galaxies[$j][1]),
-            ];
+            $maxRow = max($galaxies[$i][0], $galaxies[$j][0]);
+            $maxCol = max($galaxies[$i][1], $galaxies[$j][1]);
 
-            $additional_rows = 0;
-            foreach ($empty_rows as $row) {
-                if ($lhs[0] < $row and $row < $rhs[0]) {
-                    ++$additional_rows;
-                }
-            }
+            $extra_rows = array_reduce(
+                $empty_rows,
+                function ($carry, $row) use ($minRow, $maxRow) {
+                    return $carry + (($minRow < $row and $row < $maxRow) ? 1 : 0);
+                },
+                0
+            );
 
-            $additional_cols = 0;
-            foreach ($empty_cols as $col) {
-                if ($lhs[1] < $col and $col < $rhs[1]) {
-                    ++$additional_cols;
-                }
-            }
+            $extra_cols = array_reduce(
+                $empty_cols,
+                function ($acc, $col) use ($minCol, $maxCol) {
+                    return $acc + (($minCol < $col and $col < $maxCol) ? 1 : 0);
+                },
+                0
+            );
 
-            $sum += ($rhs[0] + ($additional_rows * ($EXPANSION_RATE - 1)) - $lhs[0])
-              + ($rhs[1] + ($additional_cols * ($EXPANSION_RATE - 1)) - $lhs[1]);
+            $sum += ($maxRow + ($extra_rows * ($expansion - 1)) - $minRow)
+              + ($maxCol + ($extra_cols * ($expansion - 1)) - $minCol);
         }
     }
 
