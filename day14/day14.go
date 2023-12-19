@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	filename := "sample.txt"
+	filename := "input"
 	fmt.Printf("Part 1: %d\n", part1(filename))
 	fmt.Printf("Part 2: %d\n", part2(filename))
 
@@ -43,24 +43,20 @@ func part2(filename string) int {
 
 	input := getInput(filename)
 	cache := make(map[string]Image)
+	key := ""
 
 	var cycles int
 
-	var inputKey string
-
-	for cycles = 0; ; {
-		key := string(bytes.Join(input, nil))
-		cache[key] = Image{cycles, calcLoad(input)}
-		input = cycle(input)
-		cycles += 1
-		inputKey = string(bytes.Join(input, nil))
-
-		if _, ok := cache[inputKey]; ok {
+	for cycles = 0; ; cycles++ {
+		if _, ok := cache[key]; ok {
 			break
 		}
+		cache[key] = Image{cycles, calcLoad(input)}
+		input = cycle(input)
+		key = string(bytes.Join(input, nil))
 	}
 
-	index := cache[inputKey].i + (1_000_000_000-cache[inputKey].i)%(cycles-cache[inputKey].i)
+	index := cache[key].i + (1_000_000_000-cache[key].i)%(cycles-cache[key].i)
 	for _, v := range cache {
 		if v.i == index {
 			return v.load
