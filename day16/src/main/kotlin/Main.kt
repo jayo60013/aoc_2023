@@ -23,7 +23,7 @@ fun part2(input: List<String>): Int {
         (0..<input[0].length).map { Beam(input.size, it, -1, 0) }
     ).flatten()
 
-    return edges.maxOfOrNull { solve(input, it) } ?: 0
+    return edges.maxOf { solve(input, it) }
 }
 
 fun solve(input: List<String>, startingPos: Beam): Int {
