@@ -1,6 +1,5 @@
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.math.max
 
 fun main() {
     val filename = "input"
@@ -17,17 +16,14 @@ fun part1(input: List<String>): Int {
 }
 
 fun part2(input: List<String>): Int {
-    var maxValue = 0
+    val edges = listOf(
+        input.indices.map { Beam(it, -1, 0, 1) },
+        input.indices.map { Beam(it, input[0].length, 0, -1) },
+        (0..<input[0].length).map { Beam(-1, it, 1, 0) },
+        (0..<input[0].length).map { Beam(input.size, it, -1, 0) }
+    ).flatten()
 
-    for (r in input.indices) {
-        maxValue = max(maxValue, solve(input, Beam(r, -1, 0, 1)))
-        maxValue = max(maxValue, solve(input, Beam(r, input[0].length, 0, -1)))
-    }
-    for (c in input[0].indices) {
-        maxValue = max(maxValue, solve(input, Beam(-1, c, 1, 0)))
-        maxValue = max(maxValue, solve(input, Beam(input.size, c, -1, 0)))
-    }
-    return maxValue
+    return edges.maxOfOrNull { solve(input, it) } ?: 0
 }
 
 fun solve(input: List<String>, startingPos: Beam): Int {
@@ -82,10 +78,5 @@ fun solve(input: List<String>, startingPos: Beam): Int {
             }
         }
     }
-
-    val energised = mutableSetOf<Pair<Int, Int>>()
-    for (beam in visited) {
-        energised.add(Pair(beam.r, beam.c))
-    }
-    return energised.size
+    return visited.map { it.r to it.c }.toSet().size
 }
