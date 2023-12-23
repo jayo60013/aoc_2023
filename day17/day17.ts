@@ -1,13 +1,13 @@
-type Block = {
-    heat: number;
-    r: number;
-    c: number;
-    dr: number;
-    dc: number;
-    n: number;
-};
+import { Block, PriorityQueue } from './priority_queue.ts';
 
-function part1(input: number[][]): number {
+const delta: [number, number][] = [
+    [0, 1],
+    [1, 0],
+    [0, -1],
+    [-1, 0]
+];
+
+function part1(grid: number[][]): number {
 
     const pos: Block = {
         heat: 0,
@@ -17,19 +17,63 @@ function part1(input: number[][]): number {
         dc: 0,
         n: 0
     };
-    var visited: Set<Block> = new Set([pos]);
-    var toVisit: Array<Block> = new Array(pos);
 
-    while (toVisit.length > 0) {
-        const b: Block = toVisit.pop();
+    const inBound = (r: number, c: number) => 0 <= r && r < grid.length && 0 <= c && c < grid[0].length;
 
-        if (b.r < 0 || b.r >= input.length || b.c < 0 || b.c >= input[0].length)
-            continue
+    var visited: Set<Block> = new Set();
+    const toVisit = new PriorityQueue();
+    toVisit.enqueue(pos);
+
+    while (!toVisit.isEmpty()) {
+        const b: Block = toVisit.dequeue();
+        const { heat, r, c, dr, dc, n } = b;
+
+        if (r === grid.length - 1 && c === grid[0].length - 1) {
+            return heat;
+        }
 
         const hasVisited = Array.from(visited).some((block) => visitedBlock(block, b));
         if (hasVisited) continue
+        visited.add(b);
+
+        if (n < 3 && (dr !== 0 || dc !== 0)) {
+            const nr: number = r + dr;
+            const nc: number = c + dc;
+
+            if (inBound(nr, nc)) {
+                const next: Block = {
+                    heat: heat + grid[nr][nc],
+                    r: nr,
+                    c: nc,
+                    dr: dr,
+                    dc: dc,
+                    n: n + 1
+                }
+                toVisit.enqueue(next);
+            }
+        }
+
+        for (const [ndr, ndc] of delta) {
+            if (!(dr === ndr && dc === ndc) && !(-dr === ndr && -dc === ndc)) {
+                const nr: number = r + ndr;
+                const nc: number = c + ndc;
+
+                if (inBound(nr, nc)) {
+                    const next: Block = {
+                        heat: heat + grid[nr][nc],
+                        r: nr,
+                        c: nc,
+                        dr: ndr,
+                        dc: ndc,
+                        n: 1
+                    }
+                    toVisit.enqueue(next);
+                }
+
+            }
+        }
     }
-    return 5;
+    return -1;
 }
 
 const visitedBlock = (lhs: Block, rhs: Block): boolean => {
@@ -40,9 +84,12 @@ const visitedBlock = (lhs: Block, rhs: Block): boolean => {
         lhs.n === rhs.n;
 };
 
-const input = await Deno.readTextFile("sample.txt");
-const grid: number[][] = input.split('\n')
+const input = await Deno.readTextFile("input");
+const grid: number[][] = input
+    .split('\n')
+    .filter((line: string) => line.trim() !== '')
     .map((line: string) =>
         [...line].map((n) => Number(n))
     );
-part1(grid)
+
+console.log("Part 1: ", part1(grid));

@@ -18,3 +18,5 @@ This year I've decided copy [LowLevelCoder](https://www.youtube.com/@LowLevelLea
 
 ## Challenges to come back to
 - day 5 part 2
+- day 17 both parts
+    - Works on the sample but not on the input?
