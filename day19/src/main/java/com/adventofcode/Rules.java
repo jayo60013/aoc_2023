@@ -1,18 +1,26 @@
 package com.adventofcode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Rules {
 	private final List<Rule> rules;
 	private String label;
 
-	public Rules() {
-		this.rules = new ArrayList<>();
+	public Rules(List<Rule> rs, String label) {
+		this.rules = rs;
+		this.label = label;
 	}
 
 	public void addRule(Rule r) {
 		this.rules.add(r);
+	}
+
+	public void addAllRules(List<Rule> rs) {
+		this.rules.addAll(rs);
+	}
+
+	public List<Rule> getRules() {
+		return rules;
 	}
 
 	public String getLabel() {

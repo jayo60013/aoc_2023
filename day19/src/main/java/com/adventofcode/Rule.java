@@ -14,6 +14,22 @@ public class Rule {
 		this.label = label;
 	}
 
+	public String getPart() {
+		return part;
+	}
+
+	public Operation getOp() {
+		return op;
+	}
+
+	public Integer getValue() {
+		return value;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
 	public enum Operation {
 		LT,
 		GT,
