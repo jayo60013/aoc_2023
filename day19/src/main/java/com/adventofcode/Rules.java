@@ -4,30 +4,18 @@ import java.util.List;
 
 public class Rules {
 	private final List<Rule> rules;
-	private String label;
+	private final String fallback;
 
-	public Rules(List<Rule> rs, String label) {
+	public Rules(List<Rule> rs, String fallback) {
 		this.rules = rs;
-		this.label = label;
-	}
-
-	public void addRule(Rule r) {
-		this.rules.add(r);
-	}
-
-	public void addAllRules(List<Rule> rs) {
-		this.rules.addAll(rs);
+		this.fallback = fallback;
 	}
 
 	public List<Rule> getRules() {
 		return rules;
 	}
 
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
+	public String getFallback() {
+		return fallback;
 	}
 }

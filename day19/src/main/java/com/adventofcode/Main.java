@@ -7,9 +7,87 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+record Rule(String part, String op, Integer value, String label) {
+}
+
+record Range(int start, int end) {
+}
+
 public class Main {
+	private static Map<String, Rules> ruleMap;
+	private static List<Map<String, Integer>> parts;
+
 	public static void main(String[] args) throws IOException {
-		System.out.printf("Part 1: %d\n", part1("input"));
+		List<String> input = Files.readAllLines(Path.of("input"));
+
+		int s = input.indexOf("");
+		ruleMap = parseRules(input.subList(0, s));
+		parts = parseParts(input.subList(s + 1, input.size()));
+
+		System.out.printf("Part 1: %d\n", part1());
+		System.out.printf("Part 2: %d\n", part2());
+	}
+
+	public static long part2() {
+		Map<String, Range> partRanges = new HashMap<>();
+		for (String s : List.of("x", "m", "a", "s")) {
+			partRanges.put(s, new Range(1, 4000));
+		}
+		return count(partRanges, "in");
+	}
+
+	public static long count(Map<String, Range> ranges, String label) {
+		if (label.equals("R")) return 0;
+		if (label.equals("A")) {
+			return ranges.values().stream()
+					.mapToLong(r -> r.end() - r.start() + 1)
+					.reduce(1, (acc, length) -> acc * length);
+		}
+
+		Rules rules = ruleMap.get(label);
+
+		long total = 0L;
+		boolean needFallback = true;
+		for (Rule rule : rules.getRules()) {
+			Range accept;
+			Range reject;
+			if (rule.op().equals("<")) {
+				accept = new Range(
+						ranges.get(rule.part()).start(),
+						rule.value() - 1
+				);
+				reject = new Range(
+						rule.value(),
+						ranges.get(rule.part()).end()
+				);
+			} else {
+				accept = new Range(
+						rule.value() + 1,
+						ranges.get(rule.part()).end()
+				);
+				reject = new Range(
+						ranges.get(rule.part()).start(),
+						rule.value()
+				);
+			}
+			if (accept.start() <= accept.end()) {
+				Map<String, Range> newRanges = new HashMap<>(ranges);
+				newRanges.put(rule.part(), accept);
+				total += count(newRanges, rule.label());
+			}
+			if (reject.start() <= reject.end()) {
+				ranges = new HashMap<>(ranges);
+				ranges.put(rule.part(), reject);
+			} else {
+				needFallback = false;
+				break;
+			}
+		}
+
+		if (needFallback) {
+			total += count(ranges, rules.getFallback());
+		}
+		return total;
 	}
 
 	public static Map<String, Rules> parseRules(List<String> input) {
@@ -30,7 +108,7 @@ public class Main {
 								.filter(Matcher::find)
 								.map(m -> new Rule(
 										m.group(1),
-										"<".equals(m.group(2)) ? Rule.Operation.LT : Rule.Operation.GT,
+										m.group(2),
 										Integer.parseInt(m.group(3)),
 										m.group(4)
 								))
@@ -59,14 +137,7 @@ public class Main {
 				.toList();
 	}
 
-	public static int part1(String filename) throws IOException {
-		List<String> input = Files.readAllLines(Path.of(filename));
-
-		int s = input.indexOf("");
-		Map<String, Rules> ruleMap = parseRules(input.subList(0, s));
-		List<Map<String, Integer>> parts = parseParts(input.subList(s + 1, input.size()));
-
-
+	public static int part1() {
 		return parts.stream()
 				.map(part -> {
 					String label = "in";
@@ -77,7 +148,7 @@ public class Main {
 						Optional<Rule> firstMatch = rules.getRules().stream()
 								.filter(r -> checkCondition(r, part))
 								.findFirst();
-						label = firstMatch.map(Rule::getLabel).orElseGet(rules::getLabel);
+						label = firstMatch.map(Rule::label).orElseGet(rules::getFallback);
 					}
 					return label.equals("A") ? part.values().stream().reduce(Integer::sum).orElse(0) : 0;
 				})
@@ -86,8 +157,8 @@ public class Main {
 	}
 
 	public static boolean checkCondition(Rule r, Map<String, Integer> part) {
-		int v = part.get(r.getPart());
-		return (r.getOp() == Rule.Operation.LT && v < r.getValue()) ||
-				(r.getOp() == Rule.Operation.GT && v > r.getValue());
+		int v = part.get(r.part());
+		return ("<".equals(r.op()) && v < r.value()) ||
+				(">".equals(r.op()) && v > r.value());
 	}
 }
