@@ -16,7 +16,15 @@ This year I've decided copy [LowLevelCoder](https://www.youtube.com/@LowLevelLea
 - Java
 - Kotlin
 
+## Total stars
+⭐: 38
+
 ## Challenges to come back to
-- day 5 part 2
+- day 5 
+    - part 2
 - day 17 both parts
     - Works on the sample but not on the input?
+- day 20
+    - both parts
+- day 21
+    - part 2
