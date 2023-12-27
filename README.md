@@ -20,11 +20,11 @@ This year I've decided copy [LowLevelCoder](https://www.youtube.com/@LowLevelLea
 ⭐: 38
 
 ## Challenges to come back to
-- day 5 
+- day 5 (JS)
     - part 2
-- day 17 both parts
+- day 17 both parts (TS)
     - Works on the sample but not on the input?
-- day 20
+- day 20 (C)
     - both parts
-- day 21
+- day 21 (Rust)
     - part 2
