@@ -39,13 +39,12 @@ int main() {
 int part1(FILE *input) {
   char *line = NULL;
   size_t len = 0;
-  ssize_t read;
 
-  int first_digit;
-  int last_digit;
+  int first_digit = -1;
+  int last_digit = 0;
   int sum = 0;
 
-  while ((read = getline(&line, &len, input)) != -1) {
+  while (getline(&line, &len, input) != -1) {
     for (size_t i = 0; line[i] != '\n'; ++i) {
       if (isdigit(line[i])) {
         if (first_digit == -1) {
@@ -59,8 +58,7 @@ int part1(FILE *input) {
     first_digit = -1;
   }
 
-  if (line)
-    free(line);
+  free(line);
   return sum;
 }
 
@@ -69,7 +67,7 @@ int part2(FILE *input) {
   size_t len = 0;
 
   int first_digit = -1;
-  int last_digit;
+  int last_digit = 0;
   int sum = 0;
 
   while (getline(&line, &len, input) != -1) {
