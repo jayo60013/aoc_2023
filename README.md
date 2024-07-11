@@ -17,7 +17,7 @@ This year I've decided copy [LowLevelCoder](https://www.youtube.com/@LowLevelLea
 - Kotlin
 
 ## Total stars
-⭐: 38
+⭐: 39
 
 ## Challenges to come back to
 - day 5 (JS)
